@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-	// Try common IDs/classes first, then fall back to any button with text 'Search'
 	function findSearchButton() {
 		return (
 			document.getElementById('search') ||
@@ -16,37 +15,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const btn = findSearchButton();
 	if (!btn) {
-		// If there's no button present in the page, log a helpful message and exit.
 		console.warn('Search button not found. Add a button with id="search" or text "Search".');
 		return;
 	}
 
+	const input = document.getElementById('query');
+
+	if (input) {
+		input.addEventListener('keydown', (ev) => {
+			if (ev.key === 'Enter') {
+				ev.preventDefault();
+				btn.click();
+			}
+		});
+	}
+
 	btn.addEventListener('click', async (e) => {
-		// Prevent default in case the button is inside a form
 		if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
 		try {
-			const response = await fetch('superheroes.php');
+			const rawQuery = (input && input.value) ? input.value : '';
+			const sanitizedQuery = String(rawQuery).replace(/<[^>]*>?/gm, '').trim();
+
+			const url = 'superheroes.php' + (sanitizedQuery ? ('?query=' + encodeURIComponent(sanitizedQuery)) : '');
+			const response = await fetch(url);
 			if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
 			const text = await response.text();
 
-			// Try parsing JSON; if it's an array of names, join them with newlines.
-			try {
-				const data = JSON.parse(text);
-				if (Array.isArray(data)) {
-					alert(data.join('\n'));
-				} else if (typeof data === 'object') {
-					// Pretty-print objects
-					alert(JSON.stringify(data, null, 2));
-				} else {
-					alert(String(data));
-				}
-			} catch (err) {
-				// Not JSON — show raw text
+			const resultDiv = document.getElementById('result');
+			if (resultDiv) {
+				resultDiv.innerHTML = text;
+			} else {
+				console.warn('Result container not found; falling back to alert.');
 				alert(text);
 			}
 		} catch (err) {
-			alert('Error fetching superheroes: ' + err.message);
+			const resultDiv = document.getElementById('result');
+			const message = 'Error fetching superheroes: ' + err.message;
+			if (resultDiv) resultDiv.textContent = message;
+			else alert(message);
 		}
 	});
 });

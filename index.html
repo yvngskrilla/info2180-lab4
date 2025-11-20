@@ -7,14 +7,16 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<main>
-			<h1>Superheroes</h1>
-			<!-- Search button the script will look for -->
-			<button id="search">Search</button>
-			<div id="results" aria-live="polite"></div>
-		</main>
+				<main>
+					<h1>Avengers Character Search</h1>
 
-		<!-- Load the app script -->
+					<label for="query">Search</label>
+					<input id="query" type="text" placeholder="Name or alias">
+					<button id="search" type="button">Search</button>
+
+					<div id="result" aria-live="polite"></div>
+				</main>
+
 		<script src="app.js"></script>
 	</body>
 </html>

@@ -63,10 +63,38 @@ $superheroes = [
   ], 
 ];
 
-?>
+$query = '';
+if (isset($_GET['query'])) {
+    $query = trim((string) $_GET['query']);
+}
 
-<ul>
-<?php foreach ($superheroes as $superhero): ?>
-  <li><?= $superhero['alias']; ?></li>
-<?php endforeach; ?>
-</ul>
+if ($query === '') {
+    header('Content-Type: text/html; charset=utf-8');
+    echo "<ul>\n";
+    foreach ($superheroes as $superhero) {
+        echo "  <li>" . htmlspecialchars($superhero['alias'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</li>\n";
+    }
+    echo "</ul>\n";
+    exit;
+}
+$found = null;
+$lowerQuery = mb_strtolower($query, 'UTF-8');
+foreach ($superheroes as $hero) {
+    $alias = mb_strtolower($hero['alias'], 'UTF-8');
+    $name = mb_strtolower($hero['name'], 'UTF-8');
+    if (mb_strpos($alias, $lowerQuery) !== false || mb_strpos($name, $lowerQuery) !== false) {
+        $found = $hero;
+        break;
+    }
+}
+
+header('Content-Type: text/html; charset=utf-8');
+if ($found) {
+    echo '<h3>' . htmlspecialchars($found['alias'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</h3>' . "\n";
+    echo '<h4>' . htmlspecialchars($found['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</h4>' . "\n";
+    echo '<p>' . htmlspecialchars($found['biography'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</p>' . "\n";
+} else {
+    echo 'Superhero not Found';
+}
+
+?>
